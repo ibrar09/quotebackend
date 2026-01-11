@@ -26,6 +26,10 @@ router.post('/upload-stores', upload.single('file'), async (req, res) => {
 
     bufferStream
         .pipe(csv())
+        .on('error', (err) => {
+            console.error('❌ [STORES] CSV Parsing Error:', err);
+            res.status(400).json({ error: 'Failed to parse CSV file.' });
+        })
         .on('data', (data) => results.push(data))
         .on('end', async () => {
             console.log(`📊 [STORES] Received CSV: ${results.length} rows.`);
@@ -74,6 +78,10 @@ router.post('/upload-pricelist', upload.single('file'), async (req, res) => {
 
     bufferStream
         .pipe(csv())
+        .on('error', (err) => {
+            console.error('❌ [PRICELIST] CSV Parsing Error:', err);
+            res.status(400).json({ error: 'Failed to parse CSV file.' });
+        })
         .on('data', (data) => results.push(data))
         .on('end', async () => {
             console.log(`📊 [PRICELIST] Received CSV: ${results.length} rows.`);
