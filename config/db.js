@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const isProduction = process.env.NODE_ENV === 'production';
-const dbUrl = process.env.DATABASE_PUBLIC_URL || process.env.DATABASE_INTERNAL_URL;
+const dbUrl = process.env.DATABASE_URL || process.env.DATABASE_INTERNAL_URL;
 
 if (dbUrl) {
   console.log('📦 Database Source: Use DATABASE_URL');
