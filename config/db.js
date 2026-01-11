@@ -4,16 +4,29 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASS,
-  {
-    host: process.env.DB_HOST,
+const isProduction = process.env.NODE_ENV === 'production';
+
+const sequelize = process.env.DATABASE_URL
+  ? new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
-    logging: false, // keeps your terminal clean
-  }
-);
+    logging: false,
+    dialectOptions: isProduction ? {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    } : {}
+  })
+  : new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASS,
+    {
+      host: process.env.DB_HOST,
+      dialect: 'postgres',
+      logging: false,
+    }
+  );
 
 // Export as default for ES6 import
 export default sequelize;
