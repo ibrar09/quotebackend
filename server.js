@@ -7,6 +7,11 @@ import apiRouter from './routes/index.js';
 // Initialize dotenv
 dotenv.config();
 
+console.log('--- Database Diagnostics ---');
+console.log('Environment:', process.env.NODE_ENV || 'development');
+console.log('DB_URL status:', (process.env.DB_URL || process.env.DATABASE_URL) ? 'Present' : 'Missing');
+console.log('---------------------------');
+
 const app = express();
 
 // Middleware
