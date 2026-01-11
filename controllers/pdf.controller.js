@@ -58,21 +58,39 @@ export const generatePdf = async (req, res) => {
         });
         const page = await browser.newPage();
 
-        // 🔹 Debug: Log directly to console so we can see it in Railway/Vercel logs
+        // 🔹 Set a real User-Agent to avoid some bot-detection
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36');
+
+        // 🔹 Bypass Vercel Deployment Protection (if secret is in env)
+        if (process.env.VERCEL_PROTECTION_BYPASS) {
+            await page.setExtraHTTPHeaders({
+                'x-vercel-protection-bypass': process.env.VERCEL_PROTECTION_BYPASS
+            });
+        }
+
+        // 🔹 Debug: Log directly to console
         page.on('console', msg => console.log(`[PUPPETEER VM] ${msg.text()}`));
         page.on('pageerror', error => console.error(`[PUPPETEER VM ERROR] ${error.message}`));
-        page.on('requestfailed', request => console.error(`[PUPPETEER REQ FAIL] ${request.url()} - ${request.failure()?.errorText}`));
+        page.on('requestfailed', request => {
+            const status = request.response()?.status();
+            console.error(`[PUPPETEER REQ FAIL] [${status || 'ERR'}] ${request.url()} - ${request.failure()?.errorText || 'Failed'}`);
+        });
 
-        // Emulate screen media to ensure WYSIWYG
+        // Emulate screen media
         await page.emulateMediaType('screen');
         await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 2 });
 
         // Navigate to the URL
         console.log(`[PDF] Navigating to ${url}...`);
-        await page.goto(url, {
+        const response = await page.goto(url, {
             waitUntil: ['networkidle2', 'domcontentloaded'],
-            timeout: 60000 // 60s timeout
+            timeout: 60000
         });
+
+        // Check for 401 or 403 (Vercel login wall)
+        if (response && (response.status() === 401 || response.status() === 403)) {
+            throw new Error(`Access Denied (Status ${response.status()}). This deployment might be protected by Vercel Authentication.`);
+        }
 
         // Wait for React to finish rendering
         try {
