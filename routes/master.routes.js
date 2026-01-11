@@ -62,21 +62,34 @@ router.post('/upload-stores', upload.single('file'), async (req, res) => {
         .on('data', (data) => results.push(Object.values(data)))
         .on('end', async () => {
             console.log(`Parsed ${results.length} raw rows from CSV (Stores).`);
+            if (results.length > 0) {
+                console.log('Sample Row 0:', results[0]);
+                console.log('Sample Row 1:', results[1]);
+                console.log('Sample Row 2:', results[2]);
+            }
 
             try {
-                // Find the header row
+                // Find the header row using smart mapping
                 let headerIndex = -1;
-                for (let i = 0; i < Math.min(results.length, 20); i++) {
-                    const row = results[i].map(v => String(v).toLowerCase());
-                    if (row.includes('oracle ccid') || row.includes('ccid') || (row.includes('region') && row.includes('city'))) {
+                const storeAliases = {
+                    oracle_ccid: ['oracle_ccid', 'ccid', 'store_ccid', 'oracle_id', 'id', 'store_id'],
+                    brand: ['brand', 'label', 'concept']
+                };
+
+                for (let i = 0; i < Math.min(results.length, 25); i++) {
+                    const row = results[i].map(v => cleanHeader(v));
+                    const hasCCID = storeAliases.oracle_ccid.some(a => row.includes(cleanHeader(a)));
+                    const hasBrand = storeAliases.brand.some(a => row.includes(cleanHeader(a)));
+
+                    if (hasCCID || (hasBrand && row.length > 5)) {
                         headerIndex = i;
+                        console.log(`Smart Header Match for Stores found at row ${i}:`, results[i]);
                         break;
                     }
                 }
 
                 if (headerIndex === -1 && results.length > 0) {
-                    console.log('Sample rows for debugging:', results.slice(0, 5));
-                    return res.status(400).json({ error: 'Could not find header row (CCID, Region) in CSV' });
+                    return res.status(400).json({ error: 'Could not find header row (Oracle CCID, Brand) in Stores CSV. Please check columns.' });
                 }
 
                 if (results.length === 0) return res.json({ message: 'CSV is empty' });
@@ -89,20 +102,21 @@ router.post('/upload-stores', upload.single('file'), async (req, res) => {
 
                 // Advanced Mapper Alias Dictionaries
                 const aliases = {
-                    oracle_ccid: ['oracle_ccid', 'ccid', 'store_ccid', 'oracle_id', 'id'],
+                    oracle_ccid: ['oracle_ccid', 'ccid', 'store_ccid', 'oracle_id', 'id', 'store_id', 'ccid_number'],
                     region: ['region', 'area', 'zone'],
                     city: ['city', 'location', 'town'],
-                    mall: ['mall', 'site', 'centre', 'center', 'complex'],
+                    mall: ['mall', 'site', 'centre', 'center', 'complex', 'site_name'],
                     division: ['division', 'business_unit', 'bu', 'sector'],
                     brand: ['brand', 'label', 'concept'],
                     store_name: ['store_name', 'name', 'shop_name', 'branch'],
-                    fm_supervisor: ['fm_supervisor', 'supervisor', 'fs', 'fs_new', 'area_supervisor'],
-                    fm_manager: ['fm_manager', 'manager', 'fm', 'area_manager'],
+                    fm_supervisor: ['fm_supervisor', 'supervisor', 'fs', 'fs_new', 'area_supervisor', 'fm_supervisor'],
+                    fm_manager: ['fm_manager', 'manager', 'fm', 'area_manager', 'fm_manager'],
                     sqm: ['sqm', 'size', 'area', 'sqm_area', 'space'],
                     store_status: ['store_status', 'status', 'state'],
                     store_type: ['store_type', 'type', 'format'],
                     opening_date: ['opening_date', 'open_date', 'opened']
                 };
+                // Note: fm_supervisor and fm_manager sometimes have weird spaces in CSV
 
                 const formatted = dataRows.map(row => ({
                     oracle_ccid: getRowValue(row, headers, aliases.oracle_ccid),
@@ -121,6 +135,12 @@ router.post('/upload-stores', upload.single('file'), async (req, res) => {
                 })).filter(r => r.oracle_ccid);
 
                 console.log(`Formatted ${formatted.length} stores for database insert.`);
+                if (formatted.length > 0) {
+                    console.log('Stores Mapping Sample (Row 1):', {
+                        original: dataRows[0],
+                        formatted: formatted[0]
+                    });
+                }
 
                 await Store.bulkCreate(formatted, {
                     updateOnDuplicate: ['region', 'city', 'mall', 'division', 'brand', 'store_name', 'fm_supervisor', 'fm_manager', 'sqm', 'store_status', 'store_type', 'opening_date'],
