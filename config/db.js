@@ -5,9 +5,16 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const isProduction = process.env.NODE_ENV === 'production';
+const dbUrl = process.env.DATABASE_URL || process.env.DATABASE_INTERNAL_URL;
 
-const sequelize = process.env.DATABASE_URL
-  ? new Sequelize(process.env.DATABASE_URL, {
+if (dbUrl) {
+  console.log('📦 Database Source: Use DATABASE_URL');
+} else {
+  console.log('📦 Database Source: Standard ENV Credentials');
+}
+
+const sequelize = dbUrl
+  ? new Sequelize(dbUrl, {
     dialect: 'postgres',
     logging: false,
     dialectOptions: isProduction ? {
