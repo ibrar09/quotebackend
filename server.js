@@ -71,7 +71,7 @@ app.listen(PORT, () => {
     console.log(`==========================================`);
     console.log(`   QUOTATIONS SYSTEM STARTING...          `);
     console.log(`   SERVER RUNNING ON PORT: ${PORT}        `);
-    console.log(`   VERSION: 1.1.3 (Opt. CCID + UI Fix)    `);
+    console.log(`   VERSION: 1.1.4 (Notif Test)            `);
     console.log(`==========================================`);
 
     // Start notification cron job
