@@ -65,8 +65,8 @@ sequelize.sync({ alter: true })
     .then(() => console.log('✅ Database Tables Synced'))
     .catch(err => console.log('❌ Sync Error: ' + err));
 
-// 4. Run DB Fix to drop constraints (Temporary for v1.1.5)
-import './fix_db.js';
+// 4. Run DB Fix (Removed - run manually if needed)
+// import './fix_db.js';
 
 // Start the Server
 const PORT = process.env.PORT || 5000;
@@ -74,7 +74,7 @@ app.listen(PORT, () => {
     console.log(`==========================================`);
     console.log(`   QUOTATIONS SYSTEM STARTING...          `);
     console.log(`   SERVER RUNNING ON PORT: ${PORT}        `);
-    console.log(`   VERSION: 1.2.0 (Stable Release)        `);
+    console.log(`   VERSION: 1.2.1 (Hotfix: DB Connection) `);
     console.log(`==========================================`);
 
     // Start notification cron job

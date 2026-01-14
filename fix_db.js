@@ -23,9 +23,11 @@ const fixDatabase = async () => {
 
     } catch (error) {
         console.error('❌ Connection failed:', error);
-    } finally {
-        await sequelize.close();
     }
+    // DO NOT CLOSE CONNECTION - It is shared with the app
+    // finally {
+    //    await sequelize.close();
+    // }
 };
 
 fixDatabase();
