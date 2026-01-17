@@ -6,6 +6,7 @@ import apiRouter from './routes/index.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { startNotificationCron } from './cron/notification.cron.js';
+import { startBrandSeeding } from './seed/initBrands.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -62,7 +63,11 @@ app.get('/', (req, res) => {
 
 // 3. Database Sync
 sequelize.sync({ alter: true })
-    .then(() => console.log('✅ Database Tables Synced'))
+    .then(async () => {
+        console.log('✅ Database Tables Synced');
+        // Auto-seed brands if missing
+        await startBrandSeeding();
+    })
     .catch(err => console.log('❌ Sync Error: ' + err));
 
 // 4. Run DB Fix (Removed - run manually if needed)
