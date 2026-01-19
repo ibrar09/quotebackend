@@ -57,92 +57,22 @@ export const generateQuotationHTML = (data) => {
                 color: black;
                 font-size: 10px;
                 line-height: 1.1;
-                /* Flex Body for Sticky Footer logic */
-                display: flex;
-                flex-direction: column;
-                min-height: 100vh;
+                /* REVERTED: Standard Block Display */
+                display: block;
             }
 
-            /* Table wrapper grows and simulates borders with gradient */
-            .table-wrapper {
-                flex: 1; 
-                display: flex;
-                flex-direction: column;
-                width: 100%;
-                border-left: 1px solid black;
-                border-right: 1px solid black;
-                border-bottom: 1px solid black; /* Close the box at bottom */
-                
-                /* Vertical Lines Simulation to fill empty space */
-                /* Stops match column widths: 8, 56, 5, 5, 8, 8, 10 */
-                /* Cumulative: 8, 64, 69, 74, 82, 90 */
-                background: linear-gradient(to right, 
-                    transparent 0%, transparent 8%, black 8%, black calc(8% + 1px), transparent calc(8% + 1px),
-                    transparent 64%, black 64%, black calc(64% + 1px), transparent calc(64% + 1px),
-                    transparent 69%, black 69%, black calc(69% + 1px), transparent calc(69% + 1px),
-                    transparent 74%, black 74%, black calc(74% + 1px), transparent calc(74% + 1px),
-                    transparent 82%, black 82%, black calc(82% + 1px), transparent calc(82% + 1px),
-                    transparent 90%, black 90%, black calc(90% + 1px), transparent calc(90% + 1px),
-                    transparent 100%
-                );
-            }
-
-            /* Ensure rows have background to cover the gradient lines where data exists */
-            tr { background: white; }
-            th { background: #f3f4f6; }
-
-            /* Bottom section (Images/Totals) gets margin-top: auto */
-            .no-split-section {
-                display: flex;
-                margin-top: auto; 
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-                padding-top: 16px;
-            }
-
-            /* --- DYNAMIC LAYOUT --- */
+            /* REMOVED: Flex wrapper logic to restore standard flow */
             .content-wrapper {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-            }
-
-            /* Table wrapper grows and simulates borders with gradient */
-            .table-wrapper {
-                flex: 1; 
-                display: flex;
-                flex-direction: column;
                 width: 100%;
-                border-left: 1px solid black;
-                border-right: 1px solid black;
-                border-bottom: 1px solid black; /* Close the box at bottom */
-                
-                /* Vertical Lines Simulation to fill empty space */
-                /* Stops match column widths: 8, 56, 5, 5, 8, 8, 10 */
-                /* Cumulative: 8, 64, 69, 74, 82, 90 */
-                background: linear-gradient(to right, 
-                    transparent 0%, transparent 8%, black 8%, black calc(8% + 1px), transparent calc(8% + 1px),
-                    transparent 64%, black 64%, black calc(64% + 1px), transparent calc(64% + 1px),
-                    transparent 69%, black 69%, black calc(69% + 1px), transparent calc(69% + 1px),
-                    transparent 74%, black 74%, black calc(74% + 1px), transparent calc(74% + 1px),
-                    transparent 82%, black 82%, black calc(82% + 1px), transparent calc(82% + 1px),
-                    transparent 90%, black 90%, black calc(90% + 1px), transparent calc(90% + 1px),
-                    transparent 100%
-                );
             }
 
-            /* Ensure rows have background to cover the gradient lines where data exists */
-            tr { background: white; }
-            th { background: #f3f4f6; }
-
-            /* Bottom section (Images/Totals) gets margin-top: auto */
-            .no-split-section {
-                display: flex;
-                margin-top: auto; 
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-                padding-top: 16px;
+            .table-wrapper {
+                width: 100%;
+                /* Restoring standard table container */
+                margin-bottom: 4px;
             }
+            
+            /* Keep utility classes */
 
             /* --- UTILITIES --- */
             .w-full { width: 100%; }
