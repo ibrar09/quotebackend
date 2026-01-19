@@ -146,17 +146,24 @@ export const generatePdf = async (req, res) => {
                 };
 
                 // Load Assets (Stamp & Signature) from Frontend Directory if possible
+                // Load Assets (Stamp & Signature)
                 try {
-                    // Path to frontend assets: c:\Quotation\quotefrontend\src\assets
-                    const assetPath = 'c:/Quotation/quotefrontend/src/assets';
+                    // Use process.cwd() to resolve path relative to backend root
+                    const assetPath = path.join(process.cwd(), 'assets');
+                    console.log(`[PDF] Loading assets from: ${assetPath}`);
 
-                    if (fs.existsSync(`${assetPath}/stamp.jpeg`)) {
-                        const stamp = fs.readFileSync(`${assetPath}/stamp.jpeg`);
+                    if (fs.existsSync(path.join(assetPath, 'stamp.jpeg'))) {
+                        const stamp = fs.readFileSync(path.join(assetPath, 'stamp.jpeg'));
                         quoteData.stampBase64 = `data:image/jpeg;base64,${stamp.toString('base64')}`;
+                    } else {
+                        console.warn('[PDF] Stamp file missing:', path.join(assetPath, 'stamp.jpeg'));
                     }
-                    if (fs.existsSync(`${assetPath}/signature.jpeg`)) {
-                        const sig = fs.readFileSync(`${assetPath}/signature.jpeg`);
+
+                    if (fs.existsSync(path.join(assetPath, 'signature.jpeg'))) {
+                        const sig = fs.readFileSync(path.join(assetPath, 'signature.jpeg'));
                         quoteData.signatureBase64 = `data:image/jpeg;base64,${sig.toString('base64')}`;
+                    } else {
+                        console.warn('[PDF] Signature file missing:', path.join(assetPath, 'signature.jpeg'));
                     }
                 } catch (assetErr) {
                     console.warn('[PDF] Failed to load local assets:', assetErr.message);

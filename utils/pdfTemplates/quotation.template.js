@@ -368,17 +368,31 @@ export const generateQuotationHTML = (data) => {
             
             <!-- LEFT: IMAGES (50%) -->
             <div style="width: 50%; padding-right: 4px;">
-               <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; border: 1px solid #d1d5db; background: #f9fafb; padding: 2px; min-height: 160px;">
-                  ${(data.images || []).slice(0, 6).map(img => {
-            const src = img ? (img.file_path || img) : '';
-            if (!src) return '';
+               ${(() => {
+            const imgList = (data.images || []).slice(0, 6);
+            const count = imgList.length;
+
+            // Dynamic Grid Style
+            let gridStyle = 'display: grid; gap: 4px; border: 1px solid #d1d5db; background: #f9fafb; padding: 2px; min-height: 160px; height: 100%;';
+
+            if (count <= 1) gridStyle += ' grid-template-columns: 1fr;';
+            else if (count === 2) gridStyle += ' grid-template-columns: 1fr 1fr;';
+            else gridStyle += ' grid-template-columns: repeat(3, 1fr);';
+
             return `
-                      <div style="height: 100px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #d1d5db; background: white;">
-                         <img src="${src}" style="width: 100%; height: 100%; object-fit: cover; max-width: 100%; display: block;" />
-                      </div>
-                  `;
-        }).join('')}
-               </div>
+                   <div style="${gridStyle}">
+                      ${imgList.map(img => {
+                const src = img ? (img.file_path || img) : '';
+                if (!src) return '';
+                return `
+                              <div style="height: ${count <= 2 ? '150px' : '100px'}; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #d1d5db; background: white;">
+                                 <img src="${src}" style="width: 100%; height: 100%; object-fit: contain; max-width: 100%; display: block;" />
+                              </div>
+                          `;
+            }).join('')}
+                   </div>
+                   `;
+        })()}
             </div>
 
             <!-- RIGHT: TOTALS & SIGNATURE (50%) -->
