@@ -351,10 +351,10 @@ export const generateQuotationHTML = (data) => {
                 </table>
 
                  <!-- STAMP & SIGNATURE BOX -->
-                <div style="border: 1px solid black; height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; background: white; margin-top: 4px; position: relative;">
+                <div style="border: 1px solid black; height: 140px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; background: white; margin-top: 4px; position: relative;">
                      <!-- Stamp and Signature from Data -->
-                     ${data.stampBase64 ? `<img src="${data.stampBase64}" style="height: 100px; width: auto; object-fit: contain; position: absolute; left: 20px;" />` : ''}
-                     ${data.signatureBase64 ? `<img src="${data.signatureBase64}" style="height: 50px; width: auto; object-fit: contain; position: absolute; right: 40px; bottom: 40px;" />` : ''}
+                     ${data.stampBase64 ? `<img src="${data.stampBase64}" style="height: 130px; width: auto; object-fit: contain; position: absolute; left: 20px;" />` : ''}
+                     ${data.signatureBase64 ? `<img src="${data.signatureBase64}" style="height: 60px; width: auto; object-fit: contain; position: absolute; right: 40px; bottom: 50px;" />` : ''}
                 </div>
 
                 <!-- DATE OF COMPLETION -->
