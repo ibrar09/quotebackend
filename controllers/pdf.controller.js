@@ -102,16 +102,17 @@ export const generatePdf = async (req, res) => {
                 // Process Images: Convert local /uploads paths OR remote URLs to Base64 for Puppeteer
                 const processedImages = await Promise.all((jobJSON.JobImages || []).map(async (img) => {
                     let imagePath = img.file_path || '';
-                    // console.log(`[PDF] Processing Image: ${imagePath}`);
+                    if (!imagePath) return '';
+
+                    // Fixed: Remove any potential double slashes or spaces
+                    imagePath = imagePath.trim();
 
                     try {
                         // 1. Remote URL (Cloudinary / S3)
                         if (imagePath.startsWith('http')) {
                             // OPTIMIZATION: Use Cloudinary Transformation if applicable
-                            // Inject w_800,q_auto,f_auto if it's a cloudinary URL and doesn't already have params
                             if (imagePath.includes('cloudinary.com') && imagePath.includes('/upload/') && !imagePath.includes('/w_')) {
                                 imagePath = imagePath.replace('/upload/', '/upload/w_800,q_auto,f_auto/');
-                                // console.log(`[PDF] Cloudinary Optimized: ${imagePath}`);
                             }
 
                             // Use native fetch (Node 18+)
@@ -122,25 +123,26 @@ export const generatePdf = async (req, res) => {
                                 const mime = response.headers.get('content-type') || 'image/jpeg';
                                 return `data:${mime};base64,${buffer.toString('base64')}`;
                             } else {
-                                console.warn(`[PDF] Failed to fetch remote image: ${response.statusText}`);
+                                console.warn(`[PDF] Failed to fetch remote image: ${response.status} ${response.statusText} - ${imagePath}`);
                             }
                         }
                         // 2. Local File System
-                        // Treat anything that isn't http/https as local
-                        else if (imagePath && typeof imagePath === 'string') {
-                            // Normalize path to fix windows backslashes
-                            const normalizedPath = imagePath.replace(/\\/g, '/');
+                        else {
+                            // Normalize path (handle Windows/Unix slashes)
+                            let normalizedPath = imagePath.replace(/\\/g, '/');
 
-                            // Try multiple resolution strategies
-                            // 1. As provided (relative to root)
-                            let finalPath = path.resolve(process.cwd(), normalizedPath.startsWith('/') ? normalizedPath.slice(1) : normalizedPath);
+                            // Ensure we don't have leading slash for join
+                            if (normalizedPath.startsWith('/')) normalizedPath = normalizedPath.substring(1);
 
-                            // 2. If not found, try inside 'uploads' folder if it wasn't already there
-                            if (!fs.existsSync(finalPath) && !normalizedPath.includes('uploads')) {
+                            // Try to resolve absolute path
+                            let finalPath = path.resolve(process.cwd(), normalizedPath);
+
+                            // Fallback: Check inside 'uploads' if not already in path
+                            if (!fs.existsSync(finalPath) && !normalizedPath.startsWith('uploads')) {
                                 finalPath = path.resolve(process.cwd(), 'uploads', normalizedPath);
                             }
 
-                            // console.log(`[PDF] Resolving Local Path: ${imagePath} -> ${finalPath}`);
+                            console.log(`[PDF] Resolving Local Image: '${imagePath}' -> '${finalPath}'`);
 
                             if (fs.existsSync(finalPath)) {
                                 const fileData = fs.readFileSync(finalPath);
@@ -148,13 +150,22 @@ export const generatePdf = async (req, res) => {
                                 const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
                                 return `data:${mime};base64,${fileData.toString('base64')}`;
                             } else {
-                                console.warn(`[PDF] Local file not found: ${finalPath}`);
+                                console.error(`[PDF] ❌ Local file NOT FOUND: ${finalPath}`);
+                                const debugDir = path.dirname(finalPath);
+                                if (fs.existsSync(debugDir)) {
+                                    console.log(`[PDF] Contents of ${debugDir}:`, fs.readdirSync(debugDir));
+                                } else {
+                                    console.log(`[PDF] Directory ${debugDir} does not exist.`);
+                                    console.log(`[PDF] CWD: ${process.cwd()}`);
+                                }
                             }
                         }
                     } catch (err) {
-                        console.warn(`[PDF] Failed to convert image ${imagePath} to base64:`, err.message);
+                        console.error(`[PDF] Failed to convert image ${imagePath} to base64:`, err.message);
                     }
-                    return imagePath; // Fallback to original path/URL
+
+                    // Fallback: Return empty string to prevent broken link icon, or return original if remote
+                    return imagePath.startsWith('http') ? imagePath : '';
                 }));
 
                 quoteData = {
