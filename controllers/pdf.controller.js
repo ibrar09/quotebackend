@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Job from '../models/job.js';
 import { generateQuotationHTML } from '../utils/pdfTemplates/quotation.template.js';
 import { fileURLToPath } from 'url';
+import path from 'path';
 import { stampBase64, signatureBase64 } from '../config/assets.js';
 
 // In-memory store for temporary previews (lasts until server restart)

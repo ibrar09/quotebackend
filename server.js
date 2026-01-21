@@ -24,6 +24,7 @@ console.log('DB_URL status:', (process.env.DB_URL || process.env.DATABASE_URL) ?
 console.log('---------------------------');
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (required for rate limiting behind load balancers)
 
 const allowedOrigins = [
     process.env.FRONTEND_URL || 'http://localhost:5173',
